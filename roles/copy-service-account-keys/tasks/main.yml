@@ -1,0 +1,35 @@
+# Copyright 2021, Matthew Winter
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+---
+
+- name: Create Directory for Service Account Keys
+  ansible.builtin.file:
+    path: "{{ gcp_keys_dir }}"
+    owner: "{{ login_user }}"
+    group: "{{ login_user }}"
+    state: directory
+    mode: u=rwx,g=,o=
+
+- name: Retrieve and Copy Service Account Key
+  ansible.builtin.include_tasks: copy-service-account-key.yml
+  with_items:
+    - "{{ ansible_service_account }}"
+    - "{{ anthos_container_registry_service_account }}"
+    - "{{ anthos_connect_agent_service_account }}"
+    - "{{ anthos_connect_register_service_account }}"
+    - "{{ anthos_logging_monitoring_service_account }}"
+  loop_control:
+    loop_var: copy_service_account_key

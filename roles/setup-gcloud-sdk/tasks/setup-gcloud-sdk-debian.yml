@@ -1,0 +1,52 @@
+# Copyright 2021, Matthew Winter
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+---
+
+- name: Install Dependencies [Debian / Ubuntu]
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg
+
+- name: Add Google Cloud SDK Package Repository Source [Debian / Ubuntu]
+  ansible.builtin.template:
+    src: google-cloud-sdk.list.j2
+    dest: /etc/apt/sources.list.d/google-cloud-sdk.list
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Import the Google Cloud Package Repository GPG Key [Debian / Ubuntu]
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+    warn: no
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Install Google Cloud SDK [Debian / Ubuntu]
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - google-cloud-sdk

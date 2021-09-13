@@ -1,0 +1,37 @@
+__pycache__/
+*.py[cod]
+*$py.class
+dist/
+lib/
+*.egg-info/
+.cache
+pytestdebug.log
+source-contexts.json
+source-context.json
+client_secrets.json
+\#*\#
+.\#*
+*_flymake.py
+.DS_Store
+.eggs/
+.python-version
+.idea
+node_modules/
+*.code-workspace
+.envrc
+.coverage
+htmlcov/
+*.iml
+
+# Terraform
+# See: https://github.com/github/gitignore/blob/master/Terraform.gitignore
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+/cloudbuild/.terraform.lock.hcl

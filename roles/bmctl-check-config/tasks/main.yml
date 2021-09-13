@@ -1,0 +1,36 @@
+# Copyright 2021, Matthew Winter
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+---
+
+- name: Check "bmctl" Configuration for Anthos Cluster
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      export GOOGLE_APPLICATION_CREDENTIALS="{{ gcp_keys_dir }}/{{ ansible_service_account }}.json"
+      bmctl check config -c "{{ cluster_name }}" --quiet
+  args:
+    executable: /bin/bash
+  register: cluster_check_fail
+  failed_when: false
+  changed_when: false
+
+- name: Check the Previous Task
+  ansible.builtin.debug:
+    msg: "{{ cluster_check_fail.stdout_lines + cluster_check_fail.stderr_lines }}"
+  failed_when: cluster_check_fail.rc != 0
+  when:
+    - cluster_check_fail.stdout_lines is defined
+    - cluster_check_fail.stderr_lines is defined

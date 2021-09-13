@@ -1,0 +1,51 @@
+# Copyright 2021, Matthew Winter
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+---
+
+- name: Add GOOGLE_APPLICATION_CREDENTIALS Environment Variable to ".bashrc"
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_user_dir }}/.bashrc"
+    regexp: "^export GOOGLE_APPLICATION_CREDENTIALS="
+    line: "export GOOGLE_APPLICATION_CREDENTIALS=\"{{ gcp_keys_dir }}/{{ item }}.json\""
+  with_items:
+    - "{{ ansible_service_account }}"
+
+- name: Activate Ansible Service Account for "login_user"
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      gcloud auth activate-service-account "{{ item }}@{{ gcp_project_id }}.iam.gserviceaccount.com" --key-file="{{ item }}.json"
+      gcloud config set project "{{ gcp_project_id }}"
+    chdir: "{{ gcp_keys_dir }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  with_items:
+    - "{{ ansible_service_account }}"
+
+- name: Activate Ansible Service Account for "root"
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      gcloud auth activate-service-account "{{ item }}@{{ gcp_project_id }}.iam.gserviceaccount.com" --key-file="{{ item }}.json"
+      gcloud config set project "{{ gcp_project_id }}"
+    chdir: "{{ gcp_keys_dir }}"
+  args:
+    executable: /bin/bash
+  become: true
+  changed_when: false
+  with_items:
+    - "{{ ansible_service_account }}"

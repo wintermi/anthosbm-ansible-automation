@@ -1,0 +1,56 @@
+# Copyright 2021, Matthew Winter
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+---
+
+- name: Remove Unwanted Time Synchronisation Packages [Debian / Ubuntu]
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - ntp
+    - chrony
+
+- name: Remove Package Dependencies No Longer Required [Debian / Ubuntu]
+  ansible.builtin.apt:
+    autoremove: yes
+
+- name: Install Time Synchronisation Packages [Debian / Ubuntu]
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - systemd-timesyncd
+    
+- name: Enable Time Synchronisation Service [Debian / Ubuntu]
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    enabled: yes
+
+- name: Configure Time Synchronisation Service [Debian / Ubuntu]
+  ansible.builtin.template:
+    src: timesyncd.conf.j2
+    dest: /etc/systemd/timesyncd.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  register: configuration
+
+- name: Restart Time Synchronisation Service [Debian / Ubuntu]
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: restarted
+  when: configuration.changed
+  tags: ['skip_ansible_lint']

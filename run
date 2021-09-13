@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+COLUMNS=10
+
+echo "Ansible Playbook Runner"
+echo ""
+
+OPTIONS=(
+  "Initialise  - Ansible Galaxy Install"
+  "Install     - Create Anthos Workstation"
+  "Install     - Create Anthos Cluster"
+)
+
+PS3='Select an operation: '
+select OPT in "${OPTIONS[@]}"
+do
+  case $OPT in
+
+    "Initialise  - Ansible Galaxy Install")
+      pip install requests google-auth
+      ansible-galaxy collection install --force-with-deps -r vars/galaxy-requirements.yml
+      ;;
+
+    "Install     - Create Anthos Workstation")
+      ansible-playbook create-anthos-workstation.yml
+      ;;
+
+    "Install     - Create Anthos Cluster")
+      ansible-playbook create-anthos-cluster.yml
+      ;;
+
+    *)
+      echo "Invalid option '${OPT}'"
+      ;;
+
+  esac
+  break
+done

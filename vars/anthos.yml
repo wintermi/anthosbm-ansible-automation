@@ -1,0 +1,62 @@
+# Copyright 2021, Matthew Winter
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+#--------------------------------------------------------------------
+# Target Hosts
+#--------------------------------------------------------------------
+target_workstation: anthos-workstation
+target_nodes: anthos_cluster
+
+#--------------------------------------------------------------------
+# Google Cloud Project Configuration
+#--------------------------------------------------------------------
+gcp_project_id: "test-anthos-edge-project"
+
+ansible_service_account: "ansible-runner"
+
+anthos_container_registry_service_account: "anthos-container-registry"
+anthos_connect_agent_service_account: "anthos-connect-agent"
+anthos_connect_register_service_account: "anthos-connect-register"
+anthos_logging_monitoring_service_account: "anthos-logging-monitoring"
+
+secret_manager_locations: "australia-southeast1,australia-southeast2"
+
+#--------------------------------------------------------------------
+# "bmctl" Configuration
+#--------------------------------------------------------------------
+bmctl_version: "1.8.3"
+
+login_user: "anthos"
+
+gcp_keys_dir: "{{ ansible_user_dir }}/.gcp_keys"
+bmctl_workspace_dir: "{{ ansible_user_dir }}/bmctl-workspace"
+
+# Cluster name: The name the Anthos Cluster will be registered with on GCP
+# Cluster type. This can be:
+#   1) admin:      to create an admin cluster. This can later be used to create user clusters.
+#   2) user:       to create a user cluster. Requires an existing admin cluster.
+#   3) hybrid:     to create a hybrid cluster that runs admin cluster components and user workloads.
+#   4) standalone: to create a cluster that manages itself, runs user workloads, but does not manage other clusters.
+# Cluster profile. This can be:
+#   1) default: The default profile has limited resource requirements.
+#   2) edge:    The edge profile minimizes the resource consumption of Anthos clusters on bare metal. It is only available for standalone clusters.
+cluster_name: "test-anthos-edge"
+cluster_type: "standalone"
+cluster_profile: "edge"
+cluster_location: "australia-southeast1"
+
+# Container Runtime specifies which container runtime to use for scheduling containers on nodes.
+# containerd and docker are supported.
+container_runtime: "containerd"

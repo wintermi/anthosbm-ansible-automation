@@ -1,0 +1,50 @@
+# Copyright 2021, Matthew Winter
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+---
+
+- name: Check if the "bmctl" Configuration YAML File Exists
+  ansible.builtin.stat:
+    path: "{{ bmctl_workspace_dir }}/{{ cluster_name }}/{{ cluster_name }}.yaml"
+  register: bmctl_config_exists
+
+- name: Create the Standard Workspace for a "NEW" Anthos Cluster
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      export GOOGLE_APPLICATION_CREDENTIALS="{{ gcp_keys_dir }}/{{ ansible_service_account }}.json"
+      bmctl create config -c "{{ cluster_name }}" --quiet
+  args:
+    executable: /bin/bash
+  register: create_config
+  failed_when: false
+  changed_when: false
+  when: not bmctl_config_exists.stat.exists
+
+- name: Check the Previous Task
+  ansible.builtin.debug:
+    msg: "{{ create_config.stdout_lines + create_config.stderr_lines }}"
+  failed_when: create_config.rc != 0
+  when:
+    - create_config.stdout_lines is defined
+    - create_config.stderr_lines is defined
+
+- name: Write the "bmctl" Configuration YAML File
+  ansible.builtin.template:
+    src: bmctl-config-{{ cluster_name }}.yaml.j2
+    dest: "{{ bmctl_workspace_dir }}/{{ cluster_name }}/{{ cluster_name }}.yaml"
+    owner: "{{ login_user }}"
+    group: "{{ login_user }}"
+    mode: u=rw,g=rw,o=r

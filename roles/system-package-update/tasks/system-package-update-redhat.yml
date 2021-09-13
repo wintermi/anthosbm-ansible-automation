@@ -1,0 +1,39 @@
+# Copyright 2021, Matthew Winter
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+---
+
+- name: Update All Packages to the Latest Version [RedHat / CentOS]
+  ansible.builtin.dnf:
+    update_cache: yes
+    name:  "*"
+    state: latest
+  register: update_packages
+
+- name: Remove Packages Dependencies No Longer Required [RedHat / CentOS]
+  ansible.builtin.dnf:
+    autoremove: yes
+
+- name: Reboot and Wait [RedHat / CentOS]
+  ansible.builtin.reboot:
+    msg: "Reboot Initiated by Ansible"
+    connect_timeout: 5
+    reboot_timeout: 600
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: whoami
+  become: true
+  when: update_packages.changed
+  tags: ['skip_ansible_lint']
